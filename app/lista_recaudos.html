@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Recaudos</title>
+    <style>
+        .container {
+            padding: 20px;
+        }
+        .page-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .recaudo-card {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 20px;
+        }
+        #searchInput {
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            button {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .recaudo-card {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-box">
+            <h2>Lista de Recaudos</h2>
+
+            <!-- Buscador por nombre de cliente -->
+            <input type="text" id="searchInput" placeholder="Buscar por nombre de cliente">
+            <button onclick="window.location.href='MenuPrincipal.html'">Volver al Menú</button>
+
+            <div id="recaudosContainer" class="recaudos-container">
+                <!-- Recaudos serán cargados aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const recaudos = JSON.parse(localStorage.getItem('recaudos')) || [];
+            const container = document.getElementById('recaudosContainer');
+            const searchInput = document.getElementById('searchInput');
+            let recaudosFiltrados = recaudos;  // Inicialmente son todos los recaudos
+
+            // Función para mostrar los recaudos
+            function mostrarRecaudos(filtrados) {
+                container.innerHTML = ''; // Limpiar contenido previo
+                filtrados.forEach((recaudo, index) => {
+                    const recaudoCard = document.createElement('div');
+                    recaudoCard.className = 'recaudo-card';
+                    recaudoCard.innerHTML = `
+                        <h3>Id Préstamo: ${recaudo.idPrestamo}</h3>
+                        <p>Fecha de Recaudo: ${recaudo.fecha}</p>
+                        <p>Cliente: ${recaudo.cliente}</p>
+                        <p>Saldo Anterior: ${formatCurrency(recaudo.saldoAnterior)}</p>
+                        <p>Monto Abonado: ${formatCurrency(recaudo.montoRecaudo)}</p>
+                        <p>Nuevo Saldo: ${formatCurrency(recaudo.nuevoSaldo)}</p>
+                        <p>Gestor: ${recaudo.gestor}</p>
+                        <button onclick="generarRecibo(${index})">Generar Recibo PDF</button>
+                    `;
+                    container.appendChild(recaudoCard);
+                });
+            }
+
+            // Inicialmente mostrar todos los recaudos
+            mostrarRecaudos(recaudosFiltrados);
+
+            // Escuchar el input de búsqueda
+            searchInput.addEventListener('input', function () {
+                const query = searchInput.value.toLowerCase();
+                recaudosFiltrados = recaudos.filter(recaudo => 
+                    recaudo.cliente.toLowerCase().includes(query)
+                );
+                mostrarRecaudos(recaudosFiltrados);
+            });
+
+            function formatCurrency(amount) {
+                const formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                });
+                return formatter.format(amount);
+            }
+
+            // Modificar función generarRecibo para que use el array filtrado
+            window.generarRecibo = function(index) {
+                const recaudo = recaudosFiltrados[index];  // Obtener recaudo del array filtrado
+                const { jsPDF } = window.jspdf;
+
+                // Definir tamaño del PDF (80mm x 200mm)
+                const doc = new jsPDF({
+                    orientation: 'P',
+                    unit: 'mm',
+                    format: [95, 200]
+                });
+
+                // Cargar imagen y añadirla al PDF
+                const imageUrl = 'images/LOGOTIPO NEGRO.png'; // Ruta de tu imagen
+                const img = new Image();
+                img.src = imageUrl;
+                img.onload = function () {
+                    const imgWidth = 50;
+                    const imgHeight = (img.height / img.width) * imgWidth;
+
+                    // Añadir la imagen al PDF
+                    doc.addImage(img, 'PNG', 20, 10, imgWidth, imgHeight);
+
+                    // Encabezado
+                    doc.setFont('Arial', 'bold');
+                    doc.setFontSize(16);
+                    doc.text('       Recibo de Pago', 40, 30, { align: 'center' });
+
+                    // Detalles del recibo
+                    doc.setFontSize(10);
+                    doc.setFont('Arial', 'normal');
+                    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 3, 40);
+                    doc.text(`Cliente: ${recaudo.cliente}`, 3, 50);
+                    doc.text(`Id Préstamo: ${recaudo.idPrestamo}`, 3, 60);
+                    doc.text(`Gestor: ${recaudo.gestor}`, 3, 70);
+
+                    // Crear tabla
+                    const tableStartY = 80;
+                    const columnWidth1 = 50;
+                    const columnWidth2 = 30;
+                    const rowHeight = 10;
+                    
+                    // Encabezados de tabla
+                    doc.setFont('Arial', 'bold');
+                    doc.setFillColor(244, 244, 244); // Color de fondo
+                    doc.rect(10, tableStartY, columnWidth1, rowHeight, 'F');
+                    doc.rect(10 + columnWidth1, tableStartY, columnWidth2, rowHeight, 'F');
+                    doc.setFontSize(12);
+                    doc.text('Descripción', 12, tableStartY + 7);
+                    doc.text('Monto', 10 + columnWidth1 + 12, tableStartY + 7, { align: 'right' });
+
+                    // Datos de la tabla
+                    doc.setFont('Arial', 'normal');
+                    const data = [
+                        { desc: 'Saldo Anterior', amount: recaudo.saldoAnterior },
+                        { desc: 'Monto Abonado', amount: recaudo.montoRecaudo },
+                        { desc: 'Nuevo Saldo', amount: recaudo.nuevoSaldo },
+                    ];
+
+                    data.forEach((row, index) => {
+                        const y = tableStartY + rowHeight + (index * rowHeight);
+                        doc.text(row.desc, 12, y + 7);
+                        doc.text(formatCurrency(row.amount), 10 + columnWidth1 + 12, y + 7, { align: 'right' });
+                    });
+
+                    // Total Abonado
+                    const totalY = tableStartY + rowHeight + (data.length * rowHeight) + 10;
+                    doc.setFont('Arial', 'bold');
+                    doc.text('Total Abonado:', 10, totalY + 7);
+                    doc.text(formatCurrency(recaudo.montoRecaudo), 10 + columnWidth1 + 12, totalY + 7, { align: 'right' });
+
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.setFont('Arial', 'normal');
+                    const footerText1 = '             Gracias por su Abono!.';
+                    const footerText2 = 'Si tiene alguna duda o consulta comuniquese al 2312-5446.';
+
+                    function drawJustifiedText(doc, text, x, y, maxWidth) {
+                        const words = text.split(' ');
+                        let line = '';
+                        let lines = [];
+
+                        words.forEach(word => {
+                            const testLine = line + word + ' ';
+                            const { width } = doc.getTextDimensions(testLine);
+                            if (width > maxWidth) {
+                                lines.push(line.trim());
+                                line = word + ' ';
+                            } else {
+                                line = testLine;
+                            }
+                        });
+                        lines.push(line.trim());
+
+                        lines.forEach((line, index) => {
+                            const yOffset = y + (index * 5);
+                            doc.text(line, x, yOffset);
+                        });
+                    }
+
+                    drawJustifiedText(doc, footerText1, 10, totalY + 15, 85);
+                    drawJustifiedText(doc, footerText2, 10, totalY + 20, 85);
+
+                    // Guardar el PDF
+                    doc.save(`recibo_${recaudo.cliente}.pdf`);
+                };
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga de Datos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-box">
+            <h2>Carga de Datos</h2>
+            <form id="uploadForm">
+                <input type="file" id="fileInput" accept=".xlsx" />
+                <button type="button" onclick="uploadFile()">Subir Archivo</button>
+                <button type="button" onclick="reporteClientes()">Avance</button>
+                <button type="button" onclick="deleteFile()">Cierre</button>
+            </form>
+            <button onclick="window.location.href='MenuPrincipal.html'">Volver al Menú</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+        let clientes = [];
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Por favor selecciona un archivo');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                clientes = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                alert('Archivo subido con éxito');
+                localStorage.setItem('clientes', JSON.stringify(clientes));
+                window.location.href = 'MenuPrincipal.html';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function deleteFile() {
+            // Paso 1: Generar el reporte de clientes antes de borrar
+            const clientesData = localStorage.getItem('clientes');
+            if (clientesData) {
+                const clientes = JSON.parse(clientesData);
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(clientes);
+                XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+                XLSX.writeFile(wb, 'Cierre del dia.xlsx', { bookType: 'xlsx', type: 'array' });
+                
+            }
+
+            // Paso 2: Confirmar antes de borrar la base
+            if (confirm('¿Deseas realizar cierre?')) {
+                // Eliminar los datos de clientes
+                localStorage.removeItem('clientes');
+                document.getElementById('fileInput').value = '';
+                clientes = [];
+               
+
+                // Eliminar los datos de lista_recaudos
+                localStorage.removeItem('recaudos');
+                alert('Cierre realizado con exito!');
+                window.location.href = 'MenuPrincipal.html';
+            }
+        }
+
+        function reporteClientes() {
+            const clientesData = localStorage.getItem('clientes');
+            if (!clientesData) {
+                alert('No hay datos de clientes para generar el reporte');
+                return;
+            }
+
+            const clientes = JSON.parse(clientesData);
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(clientes);
+            XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+            XLSX.writeFile(wb, 'Avance.xlsx', { bookType: 'xlsx', type: 'array' });
+            alert('Reporte descargado con éxito');
+            window.location.href = 'MenuPrincipal.html';
+        }
+    </script>
+</body>
+</html>
