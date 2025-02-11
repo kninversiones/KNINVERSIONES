@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilo para la imagen del encabezado */
+        .header-img {
+            display: block;
+            margin: 0 auto;
+            width: auto;
+            max-height: 100px; /* Ajusta la altura máxima según tus necesidades */
+        }
+
+       
+    </style>
+</head>
+<body>
+   
+    <!-- Contenedor del menú -->
+    <div class="container">
+        <div class="menu-box">
+            <img src="images/LOGOTIPO NEGRO.png" alt="Logotipo" class="header-img">
+            <center><h2>Menú Principal</h2></center>
+            <button onclick="window.location.href='carga_datos.html'">Reportes</button>
+            <button onclick="window.location.href='lista_clientes.html'">Lista Clientes</button>
+            <button onclick="window.location.href='lista_recaudos.html'">Lista Recaudos</button>
+            <button onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+    
+    <script>
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

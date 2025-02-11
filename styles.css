@@ -1,0 +1,220 @@
+/* Reset default margins and paddings */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* General body styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 10px; /* Add some padding to prevent content from touching edges */
+}
+
+/* Container styles for Menu Principal */
+.container {
+    max-width: 600px; /* Adjusted for better mobile view */
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Menu box styles */
+.menu-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: grid; /* Use grid for layout */
+    grid-template-columns: repeat(2, 1fr); /* Two columns layout */
+    gap: 15px; /* Space between buttons */
+    text-align: center; /* Center text inside .menu-box */
+}
+
+/* Heading styles for Menu Principal */
+.menu-box h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+    grid-column: span 2; /* Make heading span across two columns */
+}
+
+/* Button styles for Menu Principal */
+.menu-box button {
+    padding: 15px 30px; /* Increased padding */
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px; /* Larger font size */
+    width: 100%; /* Make buttons full width of their grid cell */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+}
+
+.menu-box button:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive styles for Menu Principal */
+@media (max-width: 768px) {
+    .menu-box {
+        grid-template-columns: repeat(2, 1fr); /* Maintain two columns on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-box {
+        grid-template-columns: 1fr; /* Stack buttons in one column on very small screens */
+    }
+
+    .menu-box button {
+        font-size: 20px; /* Larger text on smaller screens */
+    }
+}
+
+/* Styles specific to the login page */
+.login-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* Adjusted for login */
+}
+
+.login-box h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.login-box .textbox {
+    margin-bottom: 15px;
+}
+
+.login-box .textbox input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.login-box button {
+    padding: 15px 30px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.login-box button:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive styles for login page */
+@media (max-width: 768px) {
+    .login-box {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-box button {
+        font-size: 20px; /* Larger text on smaller screens */
+    }
+
+    .login-box .textbox input {
+        padding: 14px; /* Slightly larger padding on smaller screens */
+        font-size: 18px;
+    }
+}
+
+/* Styles specific to the data upload page */
+.page-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.page-box h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+input[type="file"] {
+    margin-bottom: 10px;
+    display: block;
+    margin: 0 auto;
+}
+
+button {
+    padding: 15px 30px; /* Increased padding */
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px; /* Larger font size */
+    margin: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:active {
+    background-color: #004080;
+}
+
+button[onclick="window.location.href='MenuPrincipal.html'"] {
+    background-color: #6c757d;
+}
+
+button[onclick="window.location.href='MenuPrincipal.html'"]:hover {
+    background-color: #5a6268;
+}
+
+button[onclick="window.location.href='MenuPrincipal.html'"]:active {
+    background-color: #4e555b;
+}
+
+ /* Estilo para el contenedor del menú */
+ .container {
+    padding: 20px;
+    text-align: center;
+}
+
+.menu-box {
+    border: 1px solid #ccc;
+    padding: 40px;
+    border-radius: 5px;
+    display: inline-block;
+    text-align: left;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #ddd;
+}

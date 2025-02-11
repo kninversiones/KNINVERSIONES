@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Clientes</title>
+    <style>
+        .container {
+            padding: 20px;
+        }
+        .page-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .client-card {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            button {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .client-card {
+                padding: 10px;
+            }
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-box">
+            <h2>Lista de Clientes</h2>
+            <div class="search-box">
+                <label for="estadoBusqueda">Buscar por estado:</label>
+                <select id="estadoBusqueda">
+                    <option value="Todos">Todos</option>
+                    <option value="PENDIENTE">Pendiente</option>
+                    <option value="ABONADO">Abonado</option>
+                </select>
+
+                <label for="nombreBusqueda">Buscar por nombre:</label>
+                <input type="text" id="nombreBusqueda" placeholder="Nombre del cliente" />
+
+                <button onclick="filtrarClientes()">Buscar</button>
+                <button onclick="window.location.href='MenuPrincipal.html'">Volver al Menú</button>
+            </div>
+            <div id="clientesContainer" class="clientes-container">
+                <!-- Clientes serán cargados aquí -->
+            </div>
+         
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            let recaudos = JSON.parse(localStorage.getItem('recaudos')) || [];
+            let clientesFiltrados = clientes;
+            const container = document.getElementById('clientesContainer');
+
+            function formatCurrency(amount) {
+                const formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                });
+                return formatter.format(amount);
+            }
+
+            function renderClientes(clientes) {
+                container.innerHTML = ''; // Limpiar contenedor
+                clientes.forEach((cliente, index) => {
+                    const clientCard = document.createElement('div');
+                    clientCard.className = 'client-card';
+                    clientCard.innerHTML = `
+                        <h3>Id Prestamo: ${cliente[0]}</h3>
+                        <p><h4>${cliente[1]}</h4></p>
+                        <p>Modalidad: ${cliente[2]}</p>
+                        <p>Valor Cuota: ${formatCurrency(cliente[3])}</p>
+                        <p>Mínimo: ${formatCurrency(cliente[4])}</p>
+                        <p>Sugerido: ${formatCurrency(cliente[5])}</p>
+                        <p>Saldo: <span id="saldo-${index}">${formatCurrency(cliente[6])}</span></p>
+                        <p>Dirección: ${cliente[7]}</p>
+                        <p>Municipio: ${cliente[8]}</p>
+                        <p>Teléfono: ${cliente[9]}</p>
+                        <p id="Gestor-${index}">Gestor: ${cliente[11]}</p>
+                        <p id="gestion-${index}">Gestion: ${cliente[10]}</p>
+                        <p id="estado-${index}">Estado: ${cliente[12]}</p>
+                        <h3 id="Abono-${index}">Abono: ${cliente[13]}</h3>
+                        <input type="number" id="recaudo-${index}" placeholder="Monto de Recaudo" />
+                        <input type="date" id="fecha-${index}" />
+                        <button onclick="realizarRecaudo(${index}, ${cliente[6]})">Recaudar Dinero</button>
+                        <button onclick="gestionar(${index})">Gestionar</button>
+                        
+                    `;
+                    container.appendChild(clientCard);
+                });
+            }
+
+            // Renderizar todos los clientes al cargar la página
+            renderClientes(clientes);
+
+            // Función para filtrar clientes por estado y nombre
+            window.filtrarClientes = function() {
+                const estadoSeleccionado = document.getElementById('estadoBusqueda').value;
+                const nombreBusqueda = document.getElementById('nombreBusqueda').value.toLowerCase();
+                
+                clientesFiltrados = clientes.filter(cliente => {
+                    const estadoCoincide = estadoSeleccionado === 'Todos' || cliente[12].toUpperCase() === estadoSeleccionado;
+                    const nombreCoincide = cliente[1].toLowerCase().includes(nombreBusqueda);
+                    return estadoCoincide && nombreCoincide;
+                });
+                
+                renderClientes(clientesFiltrados);
+            };
+
+            // Función para realizar el recaudo
+            window.realizarRecaudo = function(index, saldo) {
+                const cliente = clientesFiltrados[index]; // Se utiliza el índice de los clientes filtrados
+                const montoRecaudo = parseFloat(document.getElementById(`recaudo-${index}`).value);
+                const fechaRecaudo = document.getElementById(`fecha-${index}`).value;
+                const gestor = document.getElementById(`Gestor-${index}`).innerText.replace('Gestor: ', '');
+
+                if (isNaN(montoRecaudo) || montoRecaudo <= 0) {
+                    alert('Por favor, ingresa un monto de recaudo válido');
+                    return;
+                }
+
+                if (!fechaRecaudo) {
+                    alert('Por favor, selecciona una fecha');
+                    return;
+                }
+
+                const nuevoSaldo = saldo - montoRecaudo;
+
+                if (nuevoSaldo < 0) {
+                    alert('El monto de recaudo no puede exceder el saldo');
+                    return;
+                }
+
+                // Sumar el nuevo recaudo al abono existente
+                const abonoPrevio = cliente[13] || 0; // Si no hay abono previo, se considera 0
+                const abonoTotal = abonoPrevio + montoRecaudo;
+
+                // Actualizar el saldo, abono y estado
+                document.getElementById(`saldo-${index}`).innerText = formatCurrency(nuevoSaldo);
+                cliente[6] = nuevoSaldo;
+                cliente[12] = 'ABONADO';
+                cliente[13] = abonoTotal;
+                document.getElementById(`Abono-${index}`).innerText = `Abono: ${formatCurrency(abonoTotal)}`;
+                document.getElementById(`estado-${index}`).innerText = `Estado: ABONADO`;
+                localStorage.setItem('clientes', JSON.stringify(clientes));
+
+                const nuevoRecaudo = {
+                    idPrestamo: cliente[0],
+                    cliente: cliente[1],
+                    saldoAnterior: saldo,
+                    montoRecaudo: montoRecaudo,
+                    nuevoSaldo: nuevoSaldo,
+                    fecha: fechaRecaudo,
+                    gestor: gestor // Guardar el gestor
+                };
+
+                recaudos.push(nuevoRecaudo);
+                localStorage.setItem('recaudos', JSON.stringify(recaudos));
+
+                alert('Recaudo realizado correctamente');
+                window.location.href = 'MenuPrincipal.html';
+            };
+
+            // Función para gestionar el campo "Gestion"
+            window.gestionar = function(index) {
+                const cliente = clientesFiltrados[index]; // Se utiliza el índice de los clientes filtrados
+                const nuevoGestion = prompt('Introduce el nuevo valor para la Gestión:');
+                if (nuevoGestion !== null && nuevoGestion.trim() !== '') {
+                    document.getElementById(`gestion-${index}`).innerText = `Gestion: ${nuevoGestion}`;
+                    cliente[10] = nuevoGestion;
+                    localStorage.setItem('clientes', JSON.stringify(clientes));
+                    alert('Gestión actualizada correctamente');
+                    window.location.href = 'MenuPrincipal.html';
+                }
+            };
+        });
+    </script>
+</body>
+</html>
